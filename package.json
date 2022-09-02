@@ -1,0 +1,12 @@
+{
+  "name": "projeto12-batepapo-uol-api",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
