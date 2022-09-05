@@ -143,7 +143,7 @@ app.post("/status", async (req, res) => {
 
 	const lastStatus = Date.now();
 
-	console.log("user: ", user);
+	// console.log("user: ", user);
 
 	try {
 		const isUser = await db.collection('participants').findOne({name: user});
@@ -163,5 +163,24 @@ app.post("/status", async (req, res) => {
 
 });
 
+
+setInterval( async () => {
+    // buscar intervalos com mais de 10 * 1000 segundos de diferença
+
+	const time = Date.now();
+	const timeOut = time - (10 * 1000);
+
+	try {
+		
+		const expiredUsers = await db.collection('participants').find({lastStatus: {$lte: timeOut }}).toArray();
+
+		console.log(expiredUsers);
+	} catch (error) {
+		console.log(error)
+	}
+
+	
+
+}, 3 * 1000); // 60 * 1000 milsec
 
 app.listen(5000, () => console.log('Listening on port 5000'));
