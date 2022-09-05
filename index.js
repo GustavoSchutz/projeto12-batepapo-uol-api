@@ -30,10 +30,25 @@ app.post("/participants", async (req, res) => {
 		console.log(validation.error.details);
 		return res.sendStatus(422);
 	}
+
+
+	try {
+
+		const findUser = await db.collection("participants").findOne({name: user.name});
+
+		if (findUser) {
+			res.sendStatus(409);
+		}
+
+	} catch (error) {
+		res.sendStatus(500);
+	}
+
 	await db.collection("participants").insertOne({
 		name: user.name,
-		lastStatus: date.now()
+		lastStatus: Date.now()
 	})
+	res.sendStatus(201);
 });
 
 
