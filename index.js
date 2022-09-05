@@ -7,7 +7,7 @@ import dayjs from 'dayjs';
 
 const app = express();
 
-const headersUserSchema = joi.string().required;
+// const headersUserSchema = joi.string().required;
 
 const userSchema = joi.object({
 	name: joi.string()
@@ -105,6 +105,54 @@ app.post("/messages", async (req, res) => {
 
 });
 
+app.get("/messages", async (req, res) => {
+	const limit = parseInt(req.query.limit);
+	const user = req.headers.user;
+
+	const findMessages = await db.collection('messages').find({}).toArray();
+
+	// checar possibilidade de filtrar com o mongo!!!
+
+	const messages = filterMessages(findMessages, user);
+
+	if (!limit) {
+		return res.send(messages);
+	}
+
+	res.send(messages.slice(-(limit))).status(201);
+
+});
+
+function filterMessages(arr, user) {
+	const filteredArray = [];
+
+	for (let index = 0; index < arr.length; index++) {
+		const element = arr[index];
+
+		if (element.to === user || element.to === "Todos" || element.type === 'message') {
+			filteredArray.push(element);
+		}
+		
+	}
+
+	return filteredArray;
+};
+
+app.post("/status", async (req, res) => {
+	const user = req.headers.user;
+
+	const userTime = await db.collection("participants").findOne({name: user});
+
+	try {
+		console.log(userTime)
+	} catch {
+		return res.sendStatus(500);
+	}
+
+	console.log()
+
+
+})
 
 
 app.listen(5000, () => console.log('Listening on port 5000'));
