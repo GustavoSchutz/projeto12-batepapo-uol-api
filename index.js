@@ -49,6 +49,15 @@ app.post("/participants", async (req, res) => {
 		name: user.name,
 		lastStatus: Date.now()
 	})
+
+	await db.collection("messages").insertOne({
+		to: 'Todos',
+		text: 'entra na sala...',
+		type: 'status',
+		from: user.name,
+		time: dayjs().format('HH:mm:ss')
+	});
+
 	res.sendStatus(201);
 });
 
