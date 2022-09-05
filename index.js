@@ -141,18 +141,27 @@ function filterMessages(arr, user) {
 app.post("/status", async (req, res) => {
 	const user = req.headers.user;
 
-	const userTime = await db.collection("participants").findOne({name: user});
+	const lastStatus = Date.now();
+
+	console.log("user: ", user);
 
 	try {
-		console.log(userTime)
-	} catch {
+		const isUser = await db.collection('participants').findOne({name: user});
+	
+		if (!isUser) {
+		  return res.sendStatus(404);
+		}
+		
+		await db.collection('participants').updateOne({name: user}, {$set: { lastStatus }})
+	
+		return res.sendStatus(200);
+	
+	  } catch (error) {
+		console.log(error)
 		return res.sendStatus(500);
-	}
+	  }
 
-	console.log()
-
-
-})
+});
 
 
 app.listen(5000, () => console.log('Listening on port 5000'));
