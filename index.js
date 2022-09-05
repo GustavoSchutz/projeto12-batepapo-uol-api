@@ -174,6 +174,20 @@ setInterval( async () => {
 		
 		const expiredUsers = await db.collection('participants').find({lastStatus: {$lte: timeOut }}).toArray();
 
+		for (let i = 0; i < expiredUsers.length; i++) {
+			const element = expiredUsers[i];
+			
+			await db.collection("messages").insertOne({
+				to: 'Todos',
+				text: 'sai da sala...',
+				type: 'status',
+				from: element.name,
+				time: dayjs().format('HH:mm:ss')
+			});
+			
+			await db.collection("participants").deleteOne({name: element.name});
+		}
+
 		console.log(expiredUsers);
 	} catch (error) {
 		console.log(error)
