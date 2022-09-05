@@ -3,8 +3,11 @@ import cors from 'cors';
 import { MongoClient } from "mongodb";
 import dotenv from 'dotenv';
 import joi from 'joi';
+import dayjs from 'dayjs';
 
 const app = express();
+
+const headersUserSchema = joi.string().required;
 
 const userSchema = joi.object({
 	name: joi.string()
@@ -29,24 +32,17 @@ mongoClient.connect().then(() => {
 
 app.post("/participants", async (req, res) => {
 	const user = req.body;
-	const validation = userSchema.validate(user);
+	const userValidation = userSchema.validate(user);
 
-	if (validation.error) {
-		console.log(validation.error.details);
+	if (userValidation.error) {
+		console.log(userValidation.error.details);
 		return res.sendStatus(422);
 	}
+	
+	const findUser = await db.collection("participants").findOne({name: user.name});
 
-
-	try {
-
-		const findUser = await db.collection("participants").findOne({name: user.name});
-
-		if (findUser) {
-			return res.sendStatus(409);
-		}
-
-	} catch (error) {
-		res.sendStatus(500);
+	if (findUser) {
+		return res.sendStatus(409);
 	}
 
 	await db.collection("participants").insertOne({
@@ -72,10 +68,42 @@ app.get("/participants", async (req, res) => {
 
 app.post("/messages", async (req, res) => {
 	const message = req.body;
+	
+	const user = req.headers.user;
+
+	// const userValidation = headersUserSchema.validate(user);
+
+	// if (userValidation.error) {
+	// 	console.log(userValidation.error.details);
+	// 	return res.sendStatus(422);
+	// }
 
 
+	const messageValidation = messageSchema.validate(message);
 
-})
+	if (messageValidation.error) {
+		console.log(messageValidation.error.details);
+		return res.sendStatus(422);
+	}
+
+	const findUser = await db.collection("participants").findOne({name: user});
+
+	if (!findUser) {
+		return res.sendStatus(422);
+	}
+
+	await db.collection("messages").insertOne({
+		to: message.to,
+		text: message.text,
+		type: message.type,
+		from: user,
+		time: dayjs().format('HH:mm:ss')
+	});
+
+
+	res.sendStatus(201);
+
+});
 
 
 
